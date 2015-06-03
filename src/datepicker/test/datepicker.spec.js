@@ -44,15 +44,23 @@ describe('datepicker directive', function () {
     getTitleButton().click();
   }
 
+  function getPreviousButton() {
+    return element.find('th').eq(0).find('button').eq(0);
+  }
+
+  function getNextButton() {
+    return element.find('th').eq(2).find('button').eq(0);
+  }
+
   function clickPreviousButton(times) {
-    var el = element.find('th').eq(0).find('button').eq(0);
+    var el = getPreviousButton();
     for (var i = 0, n = times || 1; i < n; i++) {
       el.click();
     }
   }
 
   function clickNextButton() {
-    element.find('th').eq(2).find('button').eq(0).click();
+    getNextButton().click();
   }
 
   function getLabelsRow() {
@@ -802,12 +810,9 @@ describe('datepicker directive', function () {
       expect(element.hasClass('ng-invalid-date-disabled')).toBeTruthy();
     });
 
-    it('disables all days in previous month', function() {
-      clickPreviousButton();
-      var buttons = getAllOptionsEl();
-      angular.forEach(buttons, function( button, index ) {
-        expect(angular.element(button).prop('disabled')).toBe( true );
-      });
+    it('disables the navigation to the previous month', function() {
+      var previousButton = getPreviousButton();
+      expect(angular.element(previousButton).prop('disabled')).toBe( true );
     });
 
     it('disables no days in next month', function() {
@@ -826,13 +831,30 @@ describe('datepicker directive', function () {
       });
     });
 
-    it('disables all months in previous year', function() {
+    it('disables navigation to the previous year', function() {
       clickTitleButton();
-      clickPreviousButton();
-      var buttons = getAllOptionsEl();
-      angular.forEach(buttons, function( button, index ) {
-        expect(angular.element(button).prop('disabled')).toBe( true );
-      });
+      var previousButton = getPreviousButton();
+      expect(angular.element(previousButton).prop('disabled')).toBe( true );
+    });
+
+    it('enables left navigation just once if min date is in the previous year', function() {
+      $rootScope.mindate = new Date('December 31, 2010');
+      $rootScope.date = new Date('January 1, 2011');
+      $rootScope.$digest();
+      clickTitleButton();
+      var previousButton = getPreviousButton();
+      expect(angular.element(previousButton).prop('disabled')).toBe( false );
+      previousButton.click();
+      expect(angular.element(previousButton).prop('disabled')).toBe( true );
+    });
+
+    it('disables left navigation if min date is the first day of the year', function() {
+      $rootScope.mindate = new Date('January 1, 2010');
+      $rootScope.date = new Date('January 1, 2010');
+      $rootScope.$digest();
+      clickTitleButton();
+      var previousButton = getPreviousButton();
+      expect(angular.element(previousButton).prop('disabled')).toBe( true );
     });
 
     it('disables no months in next year', function() {
@@ -897,12 +919,9 @@ describe('datepicker directive', function () {
       });
     });
 
-    it('disables all days in next month', function() {
-      clickNextButton();
-      var buttons = getAllOptionsEl();
-      angular.forEach(buttons, function( button, index ) {
-        expect(angular.element(button).prop('disabled')).toBe( true );
-      });
+    it('disables navigation to the next month', function() {
+      var nextButton = getNextButton();
+      expect(angular.element(nextButton).prop('disabled')).toBe( true );
     });
 
     it('disables appropriate months in current year', function() {
@@ -922,13 +941,39 @@ describe('datepicker directive', function () {
       });
     });
 
-    it('disables all months in next year', function() {
+    it('disables navigation to the next year', function() {
+      var nextButton = getNextButton();
+      expect(angular.element(nextButton).prop('disabled')).toBe( true );
+    });
+
+    it('enables right navigation just once if max date is in the next year', function() {
+      $rootScope.date = new Date('December 31, 2010');
+      $rootScope.maxdate = new Date('January 1, 2011');
+      $rootScope.$digest();
       clickTitleButton();
-      clickNextButton();
-      var buttons = getAllOptionsEl();
-      angular.forEach(buttons, function( button, index ) {
-        expect(angular.element(button).prop('disabled')).toBe( true );
-      });
+      var nextButton = getNextButton();
+      expect(angular.element(nextButton).prop('disabled')).toBe( false );
+      nextButton.click();
+      expect(angular.element(nextButton).prop('disabled')).toBe( true );
+    });
+
+    it('disables right navigation if max date is the last day of the year', function() {
+      $rootScope.maxdate = new Date('December 31, 2010');
+      $rootScope.date = new Date('December 31, 2010');
+      $rootScope.$digest();
+      clickTitleButton();
+      var nextButton = getNextButton();
+      expect(angular.element(nextButton).prop('disabled')).toBe( true );
+    });
+
+    it('disables right navigation if max date is the last day of the year range', function() {
+      $rootScope.maxdate = new Date('December 31, 2020');
+      $rootScope.date = new Date('December 31, 2020');
+      $rootScope.$digest();
+      clickTitleButton();
+      clickTitleButton();
+      var nextButton = getNextButton();
+      expect(angular.element(nextButton).prop('disabled')).toBe( true );
     });
 
     it('enables everything after if it is cleared', function() {

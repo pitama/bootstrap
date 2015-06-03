@@ -268,6 +268,19 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
           });
         }
 
+        // disable navigation according to the range (maxDate and minDate)
+        // compare minDate with the first day of the month
+        var calendarMinDate = new Date(firstDayOfMonth.getTime());
+        calendarMinDate.setHours(0);
+        // if the first day of the month is not greater then minDate there is no point to navigate to a previous month
+        scope.navPrevDisabled = ctrl.minDate && (calendarMinDate <= ctrl.minDate);
+        // compare maxDate with the first day of the next month
+        var calendarMaxDate = new Date(firstDayOfMonth.getTime());
+        calendarMaxDate.setHours(0);
+        calendarMaxDate.setMonth(calendarMaxDate.getMonth() + 1);
+        // if the first day of the next month is greater then maxDate there is no point to navigate to the next month
+        scope.navNextDisabled = calendarMaxDate > ctrl.maxDate;
+
         scope.labels = new Array(7);
         for (var j = 0; j < 7; j++) {
           scope.labels[j] = {
@@ -351,6 +364,12 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
           });
         }
 
+        // disable navigation according to the range (maxDate and minDate)
+        // if the first day of the year is not greater then minDate there is no point to navigate to a previous year
+        scope.navPrevDisabled = ctrl.minDate && (months[0].date <= ctrl.minDate);
+        // if the first day of the next year is greater then maxDate there is no point to navigate to the next year
+        scope.navNextDisabled = ctrl.maxDate && (new Date(year+1, 0, 1) > ctrl.maxDate);
+
         scope.title = dateFilter(ctrl.activeDate, ctrl.formatMonthTitle);
         scope.rows = ctrl.split(months, 3);
       };
@@ -410,6 +429,12 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
             uid: scope.uniqueId + '-' + i
           });
         }
+
+        // disable navigation according to the range
+        // if the first day of the year range is not greater then minDate there is no point to navigate to a previous year range
+        scope.navPrevDisabled = ctrl.minDate && (years[0].date <= ctrl.minDate);
+        // if the first day of the next year range is greater then maxDate there is no point to navigate to the next year range
+        scope.navNextDisabled = ctrl.maxDate && (new Date(years[range-1].date.getFullYear()+1, 0, 1) > ctrl.maxDate);
 
         scope.title = [years[0].label, years[range - 1].label].join(' - ');
         scope.rows = ctrl.split(years, 5);
